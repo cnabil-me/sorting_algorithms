@@ -1,90 +1,83 @@
 #include "sort.h"
+void swap_nodes(listint_t **list, listint_t **a, listint_t **b, int *s);
+void css_recurse(listint_t **l, listint_t *curr, listint_t *stop, int dir);
 /**
-*swap - swaps 2 nodes in a doubly-linked list
-*@a: address of first node
-*@b: address of second node
-*
-*Return: void
-*/
-void swap(listint_t *a, listint_t *b)
-{
-	if (a->prev)
-		a->prev->next = b;
-	if (b->next)
-		b->next->prev = a;
-	a->next = b->next;
-	b->prev = a->prev;
-	a->prev = b;
-	b->next = a;
-}
-/**
-*tail_traverse- function that sorts from the tail back
-*
-*@head: head of list
-*@tail: tail of the list
-*@list: original head of the list
-*
-*Return: new head of the list
-*/
-listint_t *tail_traverse(listint_t *head, listint_t *tail, listint_t *list)
-{
-	while (tail && tail->prev)
-	{
-		if (tail->n < tail->prev->n)
-		{
-			swap(tail->prev, tail);
-			if (tail->prev == NULL)
-				list = tail;
-			print_list(list);
-		}
-		else
-			tail = tail->prev;
-		if (tail->prev == NULL)
-			head = tail;
-	}
-	return (head);
-}
-
-/**
-*cocktail_sort_list - sorts linked list using cocktail shaker sort
-*
-*@list: doubly linked list to be sorted
-*/
+ * cocktail_sort_list - sort doubly-linked list with cocktail method
+ * @list: list to sort
+ */
 void cocktail_sort_list(listint_t **list)
 {
-	listint_t *tail, *head, *len;
-	int i = 0, j = 0, swaped = 1;
+	/* cover NULL lists or list < 2 nodes */
+	if (!list || !(*list) || !(*list)->next)
+		return;
 
-	if (!list || !*list)
-		return;
-	len = *list;
-	for (i = 0; len; i++)
+	css_recurse(&(*list), *list, NULL, 1);
+}
+/**
+ * css_recurse - recursive sorting component of cocktail shaker sort
+ * @l: list being sorted (for print)
+ * @curr: current node of list
+ * @stop: last sorted node
+ * @dir: direction of parse (left-to-right: 1, or right-to-left: -1)
+ */
+void css_recurse(listint_t **l, listint_t *curr, listint_t *stop, int dir)
+{
+	int swap = 0;
+	listint_t *temp = NULL, *next_stop = NULL;
+
+	if (stop != NULL) /* prevents dereference of NULL on first reverse pass */
+		next_stop = curr;
+
+	if (dir == 1)
 	{
-		len = len->next;
-	}
-	if (i < 2)
-		return;
-	head = *list;
-	while (j < i)
-	{
-		swaped = 0;
-		while (head && head->next)
-		{
-			if (head->n > head->next->n)
+		do {
+			if (curr->n > curr->next->n)
 			{
-				swap(head, head->next);
-				swaped++;
-				if (head->prev->prev == NULL)
-					*list = head->prev;
-				print_list(*list);
+				temp = curr->next;
+				swap_nodes(&(*l), &curr, &temp, &swap);
 			}
 			else
-				head = head->next;
-			if (head->next == NULL)
-				tail = head;
-		}
-		head = tail_traverse(head, tail, *list);
-		*list = head;
-		j++;
+				curr = curr->next;
+		} while (curr->next != stop);
+		if (swap)
+			css_recurse(&(*l), curr->prev, next_stop, -1);
 	}
+	else /* dir == -1 */
+	{
+		while (curr->prev != stop)
+		{
+			if (curr->n < curr->prev->n)
+			{
+				temp = curr->prev;
+				swap_nodes(&(*l), &temp, &curr, &swap);
+			}
+			else
+				curr = curr->prev;
+		}
+		if (swap)
+			css_recurse(&(*l), curr->next, next_stop, 1);
+	}
+}
+/**
+ * swap_nodes - swap two nodes and print list
+ * @list: list (for print)
+ * @a: left node
+ * @b: right node
+ * @s: pointer to flag tracking swaps in calling func
+ */
+void swap_nodes(listint_t **list, listint_t **a, listint_t **b, int *s)
+{
+	(*a)->next = (*b)->next;
+	(*b)->prev = (*a)->prev;
+	if ((*b)->next)
+		(*b)->next->prev = (*a);
+	if ((*a)->prev)
+		(*a)->prev->next = (*b);
+	(*b)->next = (*a);
+	(*a)->prev = (*b);
+	if (*a == *list)
+		*list = *b;
+
+	print_list(*list);
+	*s = 1;
 }

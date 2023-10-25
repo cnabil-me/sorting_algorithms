@@ -1,93 +1,113 @@
 #include "sort.h"
-#define parent(x) (((x) - 1) / 2)
-#define leftchild(x) (((x) * 2) + 1)
+
+void sift_down(int *array, size_t start, size_t end, size_t size);
+void swap_elem(int *arr, size_t size, int *a, int *b);
+
 
 /**
- * swap - swaps 2 int values
- * @array: the integer array to sort
- * @size: the size of the array
- * @a: address of first value
- * @b: address of second value
+ * sift_down - Builds heap form bottom up
  *
- * Return: void
+ * @array: List to be sorted
+ * @start: Subscript of the root ot the heap
+ * @size: Size of array
+ * @end: Subscript of the last element of the heap
  */
-void swap(int *array, size_t size, int *a, int *b)
+void sift_down(int *array, size_t start, size_t end, size_t size)
 {
-	if (*a != *b)
-	{
-		*a = *a + *b;
-		*b = *a - *b;
-		*a = *a - *b;
-	}
-	print_array((const int *)array, size);
-}
+	size_t root, child, swap;
 
-/**
-*siftdown - siftdown implementation
-*
-*@array: array to be sorted
-*@start: start of array
-*@end: end of array
-*@size: size of array
-*
-*/
-void siftdown(int *array, size_t start, size_t end, size_t size)
-{
-	size_t root = start, _swap, child;
+	root = start;
 
-	while (leftchild(root) <= end)
+	while ((root * 2) + 1 <= end)
 	{
-		child = leftchild(root);
-		_swap = root;
-		if (array[_swap] < array[child])
-			_swap = child;
-		if (child + 1 <= end &&
-			array[_swap] < array[child + 1])
-			_swap = child + 1;
-		if (_swap == root)
+		/* Subscript of left child */
+		child = (root * 2) + 1;
+		swap = root;
+
+		if (array[swap] < array[child])
+		{
+			/* Swap root and left child */
+			swap = child;
+		}
+		if (child + 1 <= end && array[swap] < array[child + 1])
+		{
+			/* Swap root with right child */
+			swap = child + 1;
+		}
+		/* If one child is greater than other */
+		if (swap != root)
+		{
+			swap_elem(array, size, &array[root], &array[swap]);
+			root = swap;
+		}
+		else
+		{
 			return;
-		swap(array, size, &array[root], &array[_swap]);
-		root = _swap;
+		}
 	}
 }
 
+
 /**
-*heapify - makes heap in-place
-*
-*@array: array to be sorted
-*@size: size of array
-*
-*/
+ * heapify - Arranges heap so largest number is root
+ * @array: array (for print)
+ * @size: size of array (for print)
+ */
 void heapify(int *array, size_t size)
 {
-	ssize_t start;
+	int start;
 
-	start = parent(size - 1);
+	/* Last non-leaf */
+	start = (size / 2) - 1;
+
 	while (start >= 0)
 	{
-		siftdown(array, start, size - 1, size);
+		sift_down(array, start, size - 1, size);
 		start--;
 	}
 }
+
+
 /**
-*heap_sort - heap sort algorithm
-*
-*@array: array to sort
-*@size: size of array
-*
-*/
+ * heap_sort - Sort list in ascending order
+ * @array: Array to be sorted
+ * @size: Size of the array
+ * Return: Void
+ */
 void heap_sort(int *array, size_t size)
 {
-	size_t end;
+	size_t last;
 
 	if (!array || size < 2)
-		return;
-	heapify(array, size);
-	end = size - 1;
-	while (end > 0)
 	{
-		swap(array, size, &array[end], &array[0]);
-		end--;
-		siftdown(array, 0, end, size);
+		return;
 	}
+
+	last = size - 1;
+
+	heapify(array, size);
+
+	while (last > 0)
+	{
+		swap_elem(array, size, &array[last], &array[0]);
+		last--;
+		sift_down(array, 0, last, size);
+	}
+}
+
+/**
+ * swap_elem - swap value of array elements
+ * @array: array (for print)
+ * @size: size of array (for print)
+ * @a: pointer to array element
+ * @b: pointer to array element
+ */
+void swap_elem(int *array, size_t size, int *a, int *b)
+{
+	int temp;
+
+	temp = *a;
+	*a = *b;
+	*b = temp;
+	print_array(array, size);
 }

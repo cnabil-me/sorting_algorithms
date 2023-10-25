@@ -1,54 +1,49 @@
 #include "sort.h"
-
+void swap_nodes(listint_t **a, listint_t **b);
 /**
- * swap - swaps 2 nodes in a doubly-linked list
- * @a: address of first node
- * @b: address of second node
- *
- * Return: void
- */
-void swap(listint_t *a, listint_t *b)
-{
-	if (a->prev)
-		a->prev->next = b;
-	if (b->next)
-		b->next->prev = a;
-	a->next = b->next;
-	b->prev = a->prev;
-	a->prev = b;
-	b->next = a;
-
-}
-
-/**
- * insertion_sort_list - insertion sorts a doubly-linked list
- * @list: address of pointer to head node
- *
- * Return: void
+ * insertion_sort_list - sort list in ascending order
+ * @list: head of list to sort
  */
 void insertion_sort_list(listint_t **list)
 {
-	listint_t *i, *j;
+	listint_t *temp = NULL, *curr = NULL, *prev = NULL;
 
-	if (!list || !*list || !(*list)->next)
-		return;
-	i = (*list)->next;
-	while (i)
+	if (list && *list && (*list)->next)
 	{
-		j = i;
-		i = i->next;
-		while (j && j->prev)
-		{
-			if (j->prev->n > j->n)
-			{
-				swap(j->prev, j);
-				if (!j->prev)
-					*list = j;
-				print_list((const listint_t *)*list);
-			}
-			else
-				j = j->prev;
-		}
+		temp = (*list)->next;
 
+		while (temp) /* iterate to end of list */
+		{
+			curr = temp;
+			prev = temp->prev;
+
+			/* if values are not ascending */
+			while (prev && curr->n < prev->n)
+			{
+				swap_nodes(&prev, &curr);
+				if (prev == *list) /* if curr now list head */
+					*list = curr;
+				print_list(*list);
+				/* if (curr->prev != NULL) if not at head of list */
+				prev = curr->prev;
+			}
+			temp = temp->next;
+		}
 	}
+}
+/**
+ * swap_nodes - swap two nodes
+ * @a: left node
+ * @b: right node
+ */
+void swap_nodes(listint_t **a, listint_t **b)
+{
+	(*a)->next = (*b)->next;
+	(*b)->prev = (*a)->prev;
+	if ((*b)->next)
+		(*b)->next->prev = (*a);
+	if ((*a)->prev)
+		(*a)->prev->next = (*b);
+	(*b)->next = (*a);
+	(*a)->prev = (*b);
 }
